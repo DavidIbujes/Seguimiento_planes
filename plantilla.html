@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Seguimiento Planes Comerciales</title>
+<style>
+  :root{
+    --tinta:#14181d; --suave:#5f6872; --linea:#e3e7ec; --fondo:#f5f7f9;
+    --papel:#ffffff; --riel:#eef1f4; --ok:#1e8e3e; --falta:#d93025;
+    --medio:#e8a33d; --azul:#1a73e8;
+    --pil-ok-f:#e4f3e7; --pil-ok-t:#15692f; --pil-no-f:#fde9e7; --pil-no-t:#b3261e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --tinta:#e8eaed; --suave:#9aa3ad; --linea:#2c323a; --fondo:#111418;
+      --papel:#1a1e23; --riel:#262b31; --ok:#34a853; --falta:#ee675c;
+      --medio:#f0b35a; --azul:#6ea8ff;
+      --pil-ok-f:#183a22; --pil-ok-t:#8fd6a2; --pil-no-f:#3d1f1c; --pil-no-t:#f5a59d;
+    }
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--fondo);color:var(--tinta);
+    font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+  .envoltura{max-width:1100px;margin:0 auto;padding:16px}
+  header{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;
+    justify-content:space-between;margin-bottom:12px}
+  h1{font-size:22px;margin:0}
+  h1 span{font-weight:400;color:var(--suave)}
+  .sello{color:var(--suave);font-size:13px}
+  .planes{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+  .planes button{font:inherit;font-weight:600;padding:9px 16px;border-radius:22px;
+    border:1px solid var(--linea);background:var(--papel);color:var(--suave);cursor:pointer}
+  .planes button.on{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+  .tarjetas{display:grid;gap:10px;margin:0 0 14px;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 14px}
+  .tarjeta b{display:block;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .tarjeta small{display:block;color:var(--suave);font-size:11px;text-transform:uppercase;
+    letter-spacing:.4px;margin-top:3px}
+  .total{height:14px;border-radius:7px;background:var(--riel);overflow:hidden;margin:-4px 0 16px}
+  .total i{display:block;height:100%;background:var(--ok)}
+  .dos{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media (max-width:860px){.dos{grid-template-columns:1fr}}
+  .caja{background:var(--papel);border:1px solid var(--linea);border-radius:10px;
+    padding:14px 16px;margin-bottom:14px;min-width:0}
+  .caja h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--suave);margin:0 0 3px}
+  .caja p.pie{color:var(--suave);font-size:12px;margin:0 0 12px}
+  .barras{display:grid;grid-template-columns:minmax(0,auto) 1fr auto;gap:8px 10px;align-items:center}
+  .barras span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+  .riel{background:var(--riel);border-radius:5px;height:16px;overflow:hidden}
+  .riel i{display:block;height:100%;background:var(--ok)}
+  .cifra{font-size:12px;color:var(--suave);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cifra b{color:var(--tinta)}
+  .pil{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-left:4px}
+  .pil.si{background:var(--pil-ok-f);color:var(--pil-ok-t)}
+  .pil.no{background:var(--pil-no-f);color:var(--pil-no-t)}
+  @media (max-width:560px){
+    .barras{grid-template-columns:1fr auto;grid-auto-flow:dense;gap:3px 8px}
+    .barras span{grid-column:1;max-width:none}
+    .barras .cifra{grid-column:2}
+    .barras .riel{grid-column:1/-1;margin-bottom:8px}
+  }
+  .mandos{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  select,input{font:inherit;padding:7px 10px;border:1px solid var(--linea);border-radius:7px;
+    background:var(--papel);color:var(--tinta);max-width:100%}
+  .btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:7px;cursor:pointer;
+    border:1px solid var(--azul);background:var(--papel);color:var(--azul)}
+  .btn.lleno{background:var(--azul);color:#fff}
+  .scroll{max-height:520px;overflow:auto;border:1px solid var(--linea);border-radius:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--linea)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--suave);
+    background:var(--papel);position:sticky;top:0;cursor:pointer;user-select:none}
+  .vacio{color:var(--suave);padding:22px;text-align:center}
+  .aviso{font-size:12px;color:var(--suave);margin:4px 0 0}
+  /* candado */
+  #candado{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  #candado form{background:var(--papel);border:1px solid var(--linea);border-radius:12px;
+    padding:26px 24px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+  #candado h1{font-size:19px}
+  #candado p{margin:0;color:var(--suave);font-size:13px}
+  #candado .err{color:var(--falta)}
+</style>
+</head>
+<body>
+
+<div id="candado">
+  <form id="f-clave">
+    <h1>Seguimiento Planes Comerciales</h1>
+    <p>Plan Ninja y Aliado Diamante</p>
+    <input type="password" id="clave" placeholder="Contraseña" autocomplete="current-password" autofocus>
+    <button class="btn lleno" type="submit">Entrar</button>
+    <p id="c-msg"></p>
+  </form>
+</div>
+
+<div class="envoltura" id="app" hidden>
+  <header>
+    <h1>Planes Comerciales · seguimiento <span id="mes"></span></h1>
+    <div class="sello">Actualizado <b id="sello"></b> · <a href="#" id="salir" style="color:inherit">salir</a></div>
+  </header>
+  <div class="planes" id="planes"></div>
+  <div class="tarjetas" id="tarjetas"></div>
+  <div class="total"><i id="total"></i></div>
+  <div class="dos">
+    <div class="caja"><h2>Avance por zona</h2>
+      <p class="pie">Locales visitados este mes sobre los de la lista. Arriba, los que van más atrás.</p>
+      <div class="barras" id="b-zona"></div></div>
+    <div class="caja"><h2>Avance por cadena</h2>
+      <p class="pie">Cada cliente con sus locales de la lista. Arriba, los que van más atrás.</p>
+      <div class="barras" id="b-cadena"></div></div>
+  </div>
+  <div class="caja"><h2>Locales que faltan</h2>
+    <div class="mandos">
+      <select id="f-zona"></select><select id="f-cadena"></select>
+      <input type="text" id="f-buscar" placeholder="Buscar local…">
+      <button class="btn" id="copiar">Copiar la lista</button>
+      <span class="sello" id="cuenta"></span>
+    </div>
+    <div class="scroll"><table id="t-faltan"></table></div>
+    <p class="aviso" id="aviso"></p>
+  </div>
+</div>
+
+<script>
+const CARGA = __CARGA__;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const titulo = t => String(t || "").toLowerCase().replace(/_/g, " ")
+  .replace(/(^|[\s.])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+const pct = (a, b) => b ? Math.round(1000 * a / b) / 10 : 0;
+const guarda = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const lee = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+/* ---------------------------------------------------------- descifrar */
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function descifrar(c, clave){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  const k = await crypto.subtle.deriveKey({name: "PBKDF2", salt: b64(c.sal), iterations: c.iter, hash: "SHA-256"},
+    base, {name: "AES-GCM", length: 256}, false, ["decrypt"]);
+  const p = await crypto.subtle.decrypt({name: "AES-GCM", iv: b64(c.iv)}, k, b64(c.datos));
+  return JSON.parse(new TextDecoder().decode(p));
+}
+async function abrir(clave, callado){
+  if (CARGA.plano) return arranca(CARGA.plano);
+  $("#c-msg").className = ""; $("#c-msg").textContent = "Abriendo…";
+  try {
+    const d = await descifrar(CARGA.cifrado, clave);
+    guarda("seg-pc-clave", clave);
+    arranca(d);
+  } catch (e) {
+    guarda("seg-pc-clave", null);
+    $("#c-msg").className = "err";
+    $("#c-msg").textContent = callado ? "" : "Contraseña incorrecta";
+  }
+}
+$("#f-clave").onsubmit = ev => { ev.preventDefault(); abrir($("#clave").value); };
+$("#salir").onclick = ev => { ev.preventDefault(); guarda("seg-pc-clave", null); location.reload(); };
+
+/* ------------------------------------------------------------ tablero */
+let D, P;
+function arranca(d){
+  D = d;
+  $("#candado").hidden = true; $("#app").hidden = false;
+  $("#mes").textContent = "· " + D.mes_nombre;
+  $("#sello").textContent = D.generado;
+  $("#planes").innerHTML = D.planes.map(p =>
+    `<button data-p="${p.clave}">${p.clave === "ninja" ? "🌻" : "💎"} ${esc(p.nombre)}</button>`).join("");
+  document.querySelectorAll("#planes button").forEach(b => b.onclick = () => elegir(b.dataset.p));
+  elegir(lee("seg-pc-plan") || D.planes[0].clave);
+}
+
+function agrupa(campo){
+  const g = {};
+  P.locales.forEach(t => {
+    const k = t[campo] || "(sin dato)";
+    g[k] = g[k] || {obj: 0, hechos: 0};
+    g[k].obj++; if (t.visita) g[k].hechos++;
+  });
+  return Object.entries(g).sort((a, b) =>
+    pct(a[1].hechos, a[1].obj) - pct(b[1].hechos, b[1].obj) || b[1].obj - a[1].obj);
+}
+function barras(sel, grupos){
+  $(sel).innerHTML = grupos.map(([n, g]) => {
+    const f = g.obj - g.hechos;
+    return `<span title="${esc(titulo(n))}">${esc(titulo(n))}</span>
+      <div class="riel"><i style="width:${pct(g.hechos, g.obj)}%"></i></div>
+      <span class="cifra"><b>${g.hechos}</b>/${g.obj} · ${pct(g.hechos, g.obj)}%${
+        f ? `<span class="pil no">faltan ${f}</span>` : `<span class="pil si">completo</span>`}</span>`;
+  }).join("");
+}
+function opciones(sel, vals, todos){
+  $(sel).innerHTML = `<option value="">${todos}</option>` + [...new Set(vals)].filter(Boolean).sort()
+    .map(v => `<option value="${esc(v)}">${esc(titulo(v))}</option>`).join("");
+}
+
+function elegir(clave){
+  P = D.planes.find(p => p.clave === clave) || D.planes[0];
+  guarda("seg-pc-plan", P.clave);
+  document.querySelectorAll("#planes button").forEach(b => b.classList.toggle("on", b.dataset.p === P.clave));
+  const falta = P.objetivo - P.visitados;
+  $("#tarjetas").innerHTML = [
+    ["locales objetivo", P.objetivo, "var(--tinta)"],
+    ["visitados", P.visitados, "var(--ok)"],
+    ["faltan", falta, "var(--falta)"],
+    ["avance", pct(P.visitados, P.objetivo) + "%", "var(--azul)"],
+  ].map(([t, v, c]) => `<div class="tarjeta"><b style="color:${c}">${esc(v)}</b><small>${t}</small></div>`).join("");
+  $("#total").style.width = pct(P.visitados, P.objetivo) + "%";
+  barras("#b-zona", agrupa("zona"));
+  barras("#b-cadena", agrupa("cadena"));
+  const fal = P.locales.filter(t => !t.visita);
+  opciones("#f-zona", fal.map(t => t.zona), "Todas las zonas");
+  opciones("#f-cadena", fal.map(t => t.cadena), "Todas las cadenas");
+  $("#f-buscar").value = "";
+  $("#aviso").textContent = P.sin_cruzar
+    ? `${P.sin_cruzar} envío(s) del mes no cuadraron con ningún local de la lista y no cuentan.` : "";
+  pinta();
+}
+
+const COLS = [["Zona", t => titulo(t.zona)], ["Cadena", t => titulo(t.cadena)],
+              ["Local", t => t.local], ["Ciudad", t => titulo(t.ciudad)], ["Código", t => t.codigo]];
+let orden = {i: 0, asc: true};
+function filtra(){
+  const z = $("#f-zona").value, c = $("#f-cadena").value, q = $("#f-buscar").value.trim().toLowerCase();
+  const g = COLS[orden.i][1];
+  return P.locales.filter(t => !t.visita && (!z || t.zona === z) && (!c || t.cadena === c) &&
+      (!q || (t.local + " " + t.cadena + " " + t.codigo).toLowerCase().includes(q)))
+    .sort((a, b) => (orden.asc ? 1 : -1) * String(g(a)).localeCompare(String(g(b)), "es", {numeric: true})
+      || String(a.local).localeCompare(b.local, "es"));
+}
+function pinta(){
+  const f = filtra();
+  $("#t-faltan").innerHTML = "<thead><tr>" + COLS.map((c, i) =>
+    `<th data-i="${i}">${c[0]}${orden.i === i ? (orden.asc ? " ▲" : " ▼") : ""}</th>`).join("") + "</tr></thead><tbody>" +
+    (f.length ? f.map(t => "<tr>" + COLS.map(c => `<td>${esc(c[1](t))}</td>`).join("") + "</tr>").join("")
+      : `<tr><td colspan="${COLS.length}" class="vacio">No falta ningún local con esos filtros. 🎉</td></tr>`) + "</tbody>";
+  $("#t-faltan").querySelectorAll("th").forEach(th => th.onclick = () => {
+    const i = +th.dataset.i; orden = {i, asc: orden.i === i ? !orden.asc : true}; pinta();
+  });
+  $("#cuenta").textContent = f.length + (f.length === 1 ? " local" : " locales");
+}
+["#f-zona", "#f-cadena"].forEach(s => $(s).onchange = pinta);
+$("#f-buscar").oninput = pinta;
+
+/* Copiar: con doble clic no hay navigator.clipboard, por eso hay plan B */
+$("#copiar").onclick = () => {
+  const txt = [COLS.map(c => c[0]).join("\t")].concat(filtra().map(t => COLS.map(c => c[1](t)).join("\t"))).join("\n");
+  const ok = () => { $("#copiar").textContent = "Copiado ✓"; setTimeout(() => $("#copiar").textContent = "Copiar la lista", 1800); };
+  const viejo = () => { const a = document.createElement("textarea"); a.value = txt; document.body.appendChild(a);
+    a.select(); try { document.execCommand("copy"); ok(); } catch (e) {} a.remove(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, viejo);
+  else viejo();
+};
+
+/* se recarga sola cuando hay datos nuevos (cada corrida deja otro version.json) */
+const generado = CARGA.plano ? CARGA.plano.generado : null;
+setInterval(() => fetch("version.json?t=" + Date.now(), {cache: "no-store"}).then(r => r.json())
+  .then(v => { if (D && v.generado !== D.generado) location.reload(); }).catch(() => {}), 120000);
+
+const guardada = lee("seg-pc-clave");
+if (CARGA.plano) arranca(CARGA.plano);
+else if (guardada) abrir(guardada, true);
+</script>
+</body>
+</html>

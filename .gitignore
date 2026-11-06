@@ -1,0 +1,5 @@
+sitio/
+__pycache__/
+.env
+*.csv
+*.xlsx
